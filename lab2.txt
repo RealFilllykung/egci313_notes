@@ -1,0 +1,29 @@
+docker login
+docker run -d --name web1 -p 8081:80 tutum/hello-world
+dockwe run -d --name web2 -p 8082:80 tutum/hello-world
+docker stop web1 web2
+docker ps
+docker run -d --name webserver1 -p 8083:80 tutum/ubuntu
+docker exec -it <id> bash
+apt_get update
+apt-get -y install apache2 php5-mysql php5 libapache2-mod-php5 php5-mcrypt php5-pgsql mysql-server nano
+//later on it will ask you the password, so just fill in: root
+service apache2 restart
+service mysql restart
+
+cd var/www/html
+mysql -u root -p
+create database egci313;
+use egci313;
+create table students(id varchar(10), name varchar(20));
+insert into students value('1','Bob');
+insert into students value('2','Tom');
+select * from students
+quit
+
+nano dbconnect.php
+//after that we have to copy the code from lab2PHPCODE.txt and then press
+-> control + O --> enter --> control + X
+
+//to use the students table again, type: use students
+//after that you'll have the access to use the students again

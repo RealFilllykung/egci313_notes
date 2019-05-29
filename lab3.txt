@@ -1,0 +1,71 @@
+//today we will be playing around with the web application that can let us to manage our database by using the web application
+docker pull mysql
+docker pull phpmyadmin
+docker run --name=sqlserver -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=egci313 -p 3306:3306 -d mysql
+docker exec -it sqlserver bash
+
+//now we will already login into the sqlserver bash
+mysql -u root -p
+//now it will ask for the password which we have to type: root
+show databases; //this will show all tables we currently have
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root';
+quit;
+exit;
+
+docker run --name myadmin -d --link sqlserver:db -p 8081:80 phpmyadmin/phpmyadmin
+//-d means that it wll run at the background
+docker ps
+
+//now we have to open our internet explorer and then type localhost:8081
+//it will appear a login page which id: root pass: root
+
+//Now we will be creating the container that will act as the webservice for the public
+docker run -d --name webservice -p 22:22 -p 8082:80 --link sqlserver:db tutum/ubuntu
+docker exec -it webservice bash
+
+//now we will be going inside the ubuntu bash
+apt-get update
+apt-get -y install apache2 php5-mysql php5 libapache2-mod-php5 php5-mcrypt php5-pgsql nano
+service apache2 restart
+cd var/www/html/
+nano dbconnect.php
+//after we nano dbconnect.php, please copy the code from the last time but with a few modification
+<?php
+$servername = "sqlserver";
+$username = "root";
+$password = "root";
+$dbname = "egci313";
+
+// Create connection
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+// Check connection
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+$sql = "SELECT * FROM students";
+$result = mysqli_query($conn, $sql);
+$i = 0;
+echo "[";
+if (($count=mysqli_num_rows($result)) > 0) {
+    // output data of each row
+   
+    while($row = mysqli_fetch_assoc($result)) {
+        echo "{\"id\":\"" . $row["id"]. "\", \"name\":\"" . $row["name"]."\"}";
+       if($i<$count-1){
+           echo ",<br>";
+       } 
+       $i++;
+    }
+  
+} else {
+    echo "0 results";
+}
+echo "]";
+mysqli_close($conn);
+
+?>
+
+
+//now after that we have to go to localhost:8082/dbconnect.pho wo see the egci313 table content
+//after that we have to add the tables by ourselves using the phpmyadmin on localhost:8081
